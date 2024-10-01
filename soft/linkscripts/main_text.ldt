@@ -1,0 +1,11 @@
+        *(EXCLUDE_FILE(
+        	*tasks.o
+        	*port.o
+        	*AudioTask.o
+        	*composite.o
+        	*audio_unified.o
+        	*fsl_adapter_sai.o
+        	*fsl_sai_edma.o
+        	*fsl_edma.o
+        	*fsl_sai.o
+        ) .text*)

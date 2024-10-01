@@ -1,0 +1,11 @@
+        <#if memory.name=="SRAM_ITC">
+        *tasks.o(.text*)
+        *port.o(.text*)
+        *AudioTask.o(.text*)
+        *composite.o(.text*)
+        *audio_unified.o(.text*)
+        *fsl_adapter_sai.o(.text*)
+        *fsl_sai_edma.o(.text*)
+        *fsl_edma.o(.text*)
+        *fsl_sai.o(.text*)
+        </#if>
