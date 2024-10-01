@@ -138,6 +138,7 @@ void AudioTask(void *handle)
     			txUsbBuffer[i] = rxCodecBuffer[i];
     		}
 #endif
+    		TIMINGLOGI2SAUE();
     		// .. test
     	}
     	else if (flag == RXCOMPLETEBITPTN)

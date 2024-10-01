@@ -42,5 +42,6 @@ extern void TimingLogWrite(uint8_t width, uint8_t func, uint8_t num, uint8_t dlt
 #define TIMINGLOGI2STXI(aaa)  TIMINGLOGI2S(1, aaa)
 #define TIMINGLOGI2SRXI(aaa)  TIMINGLOGI2S(2, aaa)
 #define TIMINGLOGI2SAUD()     TIMINGLOGI2SNUL(3)
+#define TIMINGLOGI2SAUE()     TIMINGLOGI2SNUL(4)
 
 #endif /* DEBUGMONITOR_H_ */
