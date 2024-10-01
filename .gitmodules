@@ -1,0 +1,3 @@
+[submodule "TinyWebMidiTerminal"]
+	path = TinyWebMidiTerminal
+	url = https://github.com/spaceno123/TinyWebMidiTerminal.git
