@@ -10,6 +10,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "AudioProcess.h"
 #include "AudioTask.h"
 
 #include "debugMonitor/DebugMonitor.h"
@@ -25,10 +26,13 @@ AT_NONCACHEABLE_SECTION(static int32_t txUsbBuffer[AUDIOBUFFERSIZE/sizeof(int32_
 AT_NONCACHEABLE_SECTION(static int32_t txCodecBuffer[AUDIOBUFFERSIZE/sizeof(int32_t)]);
 AT_NONCACHEABLE_SECTION(static int32_t rxCodecBuffer[AUDIOBUFFERSIZE/sizeof(int32_t)]);
 
-static TaskHandle_t audioTaskHandle = NULL;
+AT_NONCACHEABLE_SECTION(static TaskHandle_t audioTaskHandle = NULL);
 
-static volatile uint32_t txTime;
-static volatile uint32_t rxTime;
+AT_NONCACHEABLE_SECTION(static volatile uint32_t txTime);
+AT_NONCACHEABLE_SECTION(static volatile uint32_t rxTime);
+
+AT_NONCACHEABLE_SECTION(static float workIn[eAudioProcessInNumOf][AUDIOSAMPLEFLAME]);
+AT_NONCACHEABLE_SECTION(static float workOut[eAudioProcessOutNumOf][AUDIOSAMPLEFLAME]);
 
 void AudioTask_txComplete(uint8_t *txBuffer)
 {
@@ -106,6 +110,14 @@ void AudioTaskWup(uint32_t bitPattern)
 void AudioTask(void *handle)
 {
 	uint32_t flag = 0;
+	float *ppWorkIn[] = {workIn[eAudioProcessInCodecL],
+						 workIn[eAudioProcessInCodecR],
+						 workIn[eAudioProcessInUsbL],
+						 workIn[eAudioProcessInUsbR]};
+	float *ppWorkOut[] = {workOut[eAudioProcessOutCodecL],
+						  workOut[eAudioProcessOutCodecR],
+						  workOut[eAudioProcessOutUsbL],
+						  workOut[eAudioProcessOutUsbR]};
 
 	audioTaskHandle = xTaskGetCurrentTaskHandle();
 
@@ -126,20 +138,45 @@ void AudioTask(void *handle)
     	{
     		flag = 0;
 
-    		// test ..
     		TIMINGLOGI2SAUD();
-#if 0
-    		memcpy(txCodecBuffer, rxUsbBuffer, sizeof(txCodecBuffer));
-    		memcpy(txUsbBuffer, rxCodecBuffer, sizeof(rxCodecBuffer));
-#else
-    		for (int i = 0; i < AUDIOSAMPLEFLAME * AUDIOCHANNELS; ++i)
-    		{
-    			txCodecBuffer[i] = rxUsbBuffer[i];
-    			txUsbBuffer[i] = rxCodecBuffer[i];
+    		{	// tx
+    			int32_t *dstCodec = txCodecBuffer;
+    			int32_t *dstUsb = txUsbBuffer;
+    			float *srcCodecOutL = ppWorkOut[eAudioProcessOutCodecL];
+    			float *srcCodecOutR = ppWorkOut[eAudioProcessOutCodecR];
+    			float *srcUsbOutL = ppWorkOut[eAudioProcessOutUsbL];
+    			float *srcUsbOutR = ppWorkOut[eAudioProcessOutUsbR];
+
+    			for (int i = 0; i < AUDIOSAMPLEFLAME; ++i)
+    			{
+    				*dstCodec++ = *srcCodecOutL++ * 0x7fffffffl;
+    				*dstCodec++ = *srcCodecOutR++ * 0x7fffffffl;
+    				*dstUsb++ = *srcUsbOutL++ * 0x7fffffffl;
+    				*dstUsb++ = *srcUsbOutR++ * 0x7fffffffl;
+    			}
     		}
-#endif
+    		{	// rx
+        		const float convValue = 1.0f/0x80000000ul;
+    			int32_t *srcCodec = rxCodecBuffer;
+    			int32_t *srcUsb = rxUsbBuffer;
+    			float *dstCodecInL = ppWorkIn[eAudioProcessInCodecL];
+    			float *dstCodecInR = ppWorkIn[eAudioProcessInCodecR];
+    			float *dstUsbInL = ppWorkIn[eAudioProcessInUsbL];
+    			float *dstUsbInR = ppWorkIn[eAudioProcessInUsbR];
+
+    			for (int i = 0; i < AUDIOSAMPLEFLAME; ++i)
+    			{
+    				*dstCodecInL++ = *srcCodec++ * convValue;
+    				*dstCodecInR++ = *srcCodec++ * convValue;
+    				*dstUsbInL++ = *srcUsb++ * convValue;
+    				*dstUsbInR++ = *srcUsb++ * convValue;
+    			}
+    		}
+
+    		// audio process call
+    		AudioProcess(ppWorkIn, ppWorkOut);
+
     		TIMINGLOGI2SAUE();
-    		// .. test
     	}
     	else if (flag == RXCOMPLETEBITPTN)
     	{

@@ -557,8 +557,13 @@ static eResult SystemView(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 	dprintf(d, "\n Kernel Tick = %d", xTaskGetTickCount());
 	dprintf(d, "\n core counter = %u", getCoreCounter());
 #endif	//#ifdef SDK_OS_FREE_RTOS
-	dprintf(d, "\n float ok ? %f", (float)4.656612873e-10);
-	dprintf(d, "\n float ok ? %d", (int)(0x7fffffff*(float)4.656612873e-10));
+	float mulValue = 1.0f/0x80000000ul;
+	int32_t min = 0x80000000;
+	int32_t max = 0x7fffff00;
+	dprintf(d, "\n float ok ? %20.18f", (float)4.656612873e-10);
+	dprintf(d, "\n float ok ? %20.18g", mulValue);
+	dprintf(d, "\n float ok ? %20.18g", mulValue*max);
+	dprintf(d, "\n float ok ? %20.18g", mulValue*min);
 
 	return result;
 }
