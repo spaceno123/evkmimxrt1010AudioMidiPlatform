@@ -20,3 +20,4 @@ evkmimxrt1010_dev_composite_hid_audio_unified_freertos を元に改造してい�
 拡張分は以下の通り
 
 ・Debug Monitor を追加<br>
+・TinyWebMidiTerminal を使用しての Debug Monitor 対応<br>
