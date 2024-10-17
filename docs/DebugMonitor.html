@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<title>Debug Monitor Manual</title>
+</head>
+<body bgcolor="#c0c0e0" text="#000000" link="#0000ff" vlink="#800080" alink="#ff0000">
+<div align="center">
+<hr>
+<font size="+2">
+Debug Monitor Manual
+</font>
+<hr>
+</div>
+
+<br>
+<div style="padding-left:2em">
+
+<STRONG>＜概要＞</STRONG>
+<p style="padding-left:2em">
+　このマニュアルは、Serial Terminal や Midi Terminal から動作中のデバッグモニタにアクセスしてデバッグを行う手順書です。
+</p>
+
+<STRONG>＜機能＞</STRONG>
+<ul>
+<li>メモリ内容のダンプ</li>
+<li>システムパラメータの表示</li>
+<li>タイミングログのダンプ</li>
+<li>ヘルプ表示</li>
+</ul>
+
+<STRONG>＜使い方＞</STRONG>
+<ul>
+<li>ターゲットとの接続</li>
+<br>　デバッグモニタが組み込まれているターゲットに対応ターミナルで接続します。
+<br>　（AudioMidiPlatformの場合は、<a href="../TinyWebMidiTerminal/source/index.html">MidiTerminal</a>で接続します。）
+<br>　ターミナルより @@@ をタイプ送信します。
+<br>　ターミナルコンソールにターゲットから以下の応答があれば接続完了です。
+<pre>
+<tt>
+    [[[ Debug Monitor (UsbMidi) ]]]
+    *
+</tt>
+</pre>
+　接続解除は、プロンプト * の状態で @ をタイプ送信します。
+<br>　ターミナルコンソールにターゲットから以下の応答があれば接続解除完了です。
+<pre>
+<tt>
+    [[[ Exit ]]]
+</tt>
+</pre>
+
+<li>メモリ内容のダンプ</li>
+<br>・MemoryDump[CR] で下記メッセージが表示されます。
+<br>　（[CR]は、MidiTerminal の場合、入力欄にフォーカスを当てて空欄のままENTERキーをタイプします。）
+<pre>
+<tt>
+    *MemoryDump
+     usage>MemoryDump start[nnnn], end[mmmm](, access[L:Long|W:Word|B:Byte])
+                      start[nnnn], size[Smmmm](, access[L:Long|W:Word|B:Byte]))
+    *
+</tt>
+</pre>
+・MemoryDump 0x100,S256[CR] で下記の表示となります。
+<pre>
+<tt>
+    *MemoryDump 0x100,S256
+     start=00000100, end=000001ff, access=Long
+     address  +3+2+1+0 +7+6+5+4  +b+a+9+8 +f+e+d+c
+    00000100  6000bc4d 6000bc55  6000bc5d 6000bc65
+    00000110  6000bc6d 6000bc75  6000bc7d 6000bc85
+    00000120  00002e9d 6000bc8d  00002ebd 00002ead
+    00000130  6000bc95 6000bc9d  6000bca5 6000bcad
+    00000140  6000bcb5 6000bcbd  6000bcc5 6000bccd
+    00000150  6000bcd5 6000bcdd  6000bce5 6000bced
+    00000160  6000bcf5 6000bcfd  6000bd05 6000bd0d
+    00000170  6000bd15 6000bd1d  6000bd25 6000bd2d
+    00000180  60014b84 20200000  000001e8 6000ff04
+    00000190  20210000 00000000  6000ff04 20000000
+    000001a0  000001a8 600100ac  00000000 00000300
+    000001b0  600103ac 00000300  000047d8 202001e8
+    000001c0  00003040 20210000  00000000 20000800
+    000001d0  00001f20 00000300  00000000 00004ad8
+    000001e0  00000000 4b10b672  8808f383 fe74f004
+    000001f0  e0074b0e 040cf103  6859689a f0006818
+    *
+</tt>
+</pre>
+・MemoryDump 0x100,S32,b[CR] で下記の表示となります。
+<pre>
+<tt>
+    *MemoryDump 0x100,S32,b
+     start=00000100, end=0000011f, access=Byte
+     address  +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +a +b +c +d +e +f  0123456789abcdef
+    00000100  4d bc 00 60 55 bc 00 60  5d bc 00 60 65 bc 00 60  M  `U  `]  `e  `
+    00000110  6d bc 00 60 75 bc 00 60  7d bc 00 60 85 bc 00 60  m  `u  `}  `   `
+    *
+</tt>
+</pre>
+<li>システムパラメータの表示</li>
+<br>・SystemView[CR] で下記のメッセージが表示されます。
+<pre>
+<tt>
+    *SystemView
+     SystemCoreClock = 500000000 Hz
+     Kernel Tick = 6435626
+     core counter = 882840659
+     float ok ? 0.000000
+     float ok ? 1
+    *
+</tt>
+</pre>
+　（SystemViewコマンドの処理を編集して確認したいパラメータを表示させると良いでしょう。）
+<br>
+<br>
+<li>タイミングログのダンプ</li>
+<br>　ソースコードに仕込んだタイミング記録ポイントのログデータをダンプします。
+<br>　（AudioMidiPlatformでは、Audioデータの送受信とAudio処理開始ポイントに仕込まれています。）
+<br>
+<br>・TimingLog ?[CR] で下記のメッセージが表示されます。
+<pre>
+<tt>
+    *TimingLog ?
+     usage>TimingLog (cmd)
+       cmd:(w) change dump (w=width:28)
+          :'r' raw dump
+          :'c' clear
+          :'?' help
+    *
+</tt>
+</pre>
+・TimingLog[CR] で下記の表示となります。
+<pre>
+<tt>
+    *TimingLog
+     *** Timing Log (change:28) ***
+    0x00000000
+    0x00966f7b
+    0x00970ca6
+   （途中省略）
+    0x10ab61e0
+    0x10abb1d3
+    0x20abb1d4
+    *
+</tt>
+</pre>
+　上記データを<a href="https://docs.google.com/spreadsheets/d/1XWYOxF6N1jCmKHjn5oFLbgxDWJPSZiS5ewBLJHWKsq0/edit?usp=sharing">こちらの Google スプレッドシート</a>
+に貼り付けると可視化できます。
+<br>　（Google スプレッドシートはコピーしてご利用ください。）
+<br>
+<br>・TimingLog r[CR] で下記の表示となります。
+<pre>
+<tt>
+    *TimingLog r
+     *** Timing Log (raw) ***
+    0x00000000
+    0x00966f7b
+    0x10970ca7
+   （途中省略）
+    0x30ab1743
+    0x10ab61e0
+    0x20abb1d4
+    *   
+</tt>
+</pre>
+　記録されているデータを無加工でダンプします。
+<br>
+<br>・TimingLog c[CR] で下記の表示となります。
+<pre>
+<tt>
+    *TimingLog c
+     reset !
+    *</tt>
+</pre>
+　記録されているデータを削除し、引き続きログバッファサイズ分の記録を行います。
+<br>
+<br>
+<li>ヘルプ表示</li>
+<br>・Help[CR] または ?[CR] で下記のメッセージが表示されます。
+<pre>
+<tt>
+    *Help
+     --- Command List ---
+     MemoryDump start,[end|size](,[L|W|B])
+     SystemView
+     TimingLog (cmd)
+     Help
+     ?
+    *?
+     --- Command List ---
+     MemoryDump start,[end|size](,[L|W|B])
+     SystemView
+     TimingLog (cmd)
+     Help
+     ?
+    *
+</tt>
+</pre>
+
+</ul>
+
+</div>
+
+</body>
+
+</html>
