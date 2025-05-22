@@ -77,8 +77,8 @@ void DebugMonitor_entryUsbMidi(uint8_t sts, uint8_t dt1, uint8_t dt2)
             const uint8_t dt1st = dt1h | dt1;
             const uint8_t dt2nd = dt2h | dt2;
 
-			DebugMonitor_entry(eDebugMonitorInterface_UsbMidi, dt1, 1);
-			DebugMonitor_entry(eDebugMonitorInterface_UsbMidi, dt2, 1);
+			DebugMonitor_entry(eDebugMonitorInterface_UsbMidi, dt1st, 1);
+			DebugMonitor_entry(eDebugMonitorInterface_UsbMidi, dt2nd, 1);
 		}
 	}
 
