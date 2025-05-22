@@ -70,7 +70,7 @@ static uint8_t *enterMsg[] = {
 /*
  * Debug Monitor Local Out Functions
  */
-void dflush_force(eDebugMonitorInterface d)
+void dmflash_force(eDebugMonitorInterface d)
 {
 	if (d < eDebugMonitorInterfaceNumOf) {
 		DebugMonitor_t *pD = &debugMonitor[d];
@@ -96,7 +96,7 @@ void dflush_force(eDebugMonitorInterface d)
 	return;
 }
 
-void dputc_force(eDebugMonitorInterface d, uint8_t c)
+void dmputc_force(eDebugMonitorInterface d, uint8_t c)
 {
 	if (d < eDebugMonitorInterfaceNumOf) {
 		DebugMonitor_t *pD = &debugMonitor[d];
@@ -104,7 +104,7 @@ void dputc_force(eDebugMonitorInterface d, uint8_t c)
 		switch (d) {
 		case eDebugMonitorInterface_Log:
 			if (c == '\n') {
-				dputc_force(d, '\r');
+				dmputc_force(d, '\r');
 			}
 			pD->oBuffer[pD->opos++] = c;
 			if (pD->opos == OUTPUTBUFSIZE) {
@@ -129,32 +129,32 @@ void dputc_force(eDebugMonitorInterface d, uint8_t c)
 	return;
 }
 
-void dputs_force(eDebugMonitorInterface d, uint8_t *str)
+void dmputs_force(eDebugMonitorInterface d, uint8_t *str)
 {
 	while (*str) {
-		dputc_force(d, *str++);
+		dmputc_force(d, *str++);
 	}
-	dflush_force(d);
+	dmflash_force(d);
 
 	return;
 }
 
-static void vdprintf(eDebugMonitorInterface d, uint8_t *fmt, va_list va)
+static void vdmprintf(eDebugMonitorInterface d, uint8_t *fmt, va_list va)
 {
 	uint8_t buf[128];
 
 	vsnprintf(buf, sizeof(buf), fmt, va);
-	dputs_force(d, buf);
+	dmputs_force(d, buf);
 
 	return;
 }
 
-void dprintf_force(eDebugMonitorInterface d, uint8_t *fmt, ...)
+void dmprintf_force(eDebugMonitorInterface d, uint8_t *fmt, ...)
 {
 	va_list va;
 
 	va_start(va, fmt);
-	vdprintf(d, fmt, va);
+	vdmprintf(d, fmt, va);
 	va_end(va);
 
 	return;
@@ -163,7 +163,7 @@ void dprintf_force(eDebugMonitorInterface d, uint8_t *fmt, ...)
 /*
  * Debug Monitor Global Functions
  */
-void dprintf(eDebugMonitorInterface d, uint8_t *fmt, ...)
+void dmprintf(eDebugMonitorInterface d, uint8_t *fmt, ...)
 {
 	if (d < eDebugMonitorInterfaceNumOf) {
 		DebugMonitor_t *pD = &debugMonitor[d];
@@ -172,7 +172,7 @@ void dprintf(eDebugMonitorInterface d, uint8_t *fmt, ...)
 			va_list va;
 
 			va_start(va, fmt);
-			vdprintf(d, fmt, va);
+			vdmprintf(d, fmt, va);
 			va_end(va);
 		}
 	}
@@ -180,86 +180,86 @@ void dprintf(eDebugMonitorInterface d, uint8_t *fmt, ...)
 	return;
 }
 
-void dputc(eDebugMonitorInterface d, uint8_t c)
+void dmputc(eDebugMonitorInterface d, uint8_t c)
 {
 	if (d < eDebugMonitorInterfaceNumOf) {
 		DebugMonitor_t *pD = &debugMonitor[d];
 
 		if (pD->phase == 0) {
-			dputc_force(d, c);
+			dmputc_force(d, c);
 		}
 	}
 
 	return;
 }
 
-void dputs(eDebugMonitorInterface d, uint8_t *str)
+void dmputs(eDebugMonitorInterface d, uint8_t *str)
 {
 	if (d < eDebugMonitorInterfaceNumOf) {
 		DebugMonitor_t *pD = &debugMonitor[d];
 
 		if (pD->phase == 0) {
-			dputs_force(d, str);
+			dmputs_force(d, str);
 		}
 	}
 
 	return;
 }
 
-void dflush(eDebugMonitorInterface d)
+void dmflush(eDebugMonitorInterface d)
 {
 	if (d < eDebugMonitorInterfaceNumOf) {
 		DebugMonitor_t *pD = &debugMonitor[d];
 
 		if (pD->phase == 0) {
-			dflush_force(d);
+			dmflash_force(d);
 		}
 	}
 
 	return;
 }
 
-#define dprintf dprintf_force
-#define dputc dputc_force
-#define dputs dputs_force
-#define dflush dflush_force
+#define dmprintf dmprintf_force
+#define dmputc dmputc_force
+#define dmputs dmputs_force
+#define dmflush dmflash_force
 
 #ifdef MEMORYDUMP
 
-static void dputh(eDebugMonitorInterface d, uint8_t n)
+static void dmputh(eDebugMonitorInterface d, uint8_t n)
 {
-	dputc(d, n < 10 ? n + '0' : n - 10 + 'a');
+	dmputc(d, n < 10 ? n + '0' : n - 10 + 'a');
 
 	return;
 }
 
-static void dputb(eDebugMonitorInterface d, uint8_t n)
+static void dmputb(eDebugMonitorInterface d, uint8_t n)
 {
-	dputh(d, n >> 4);
-	dputh(d, n & 15);
+	dmputh(d, n >> 4);
+	dmputh(d, n & 15);
 
 	return;
 }
 
-static void dputw(eDebugMonitorInterface d, uint16_t n)
+static void dmputw(eDebugMonitorInterface d, uint16_t n)
 {
-	dputb(d, n >> 8);
-	dputb(d, n & 255);
+	dmputb(d, n >> 8);
+	dmputb(d, n & 255);
 
 	return;
 }
 
-static void dputl(eDebugMonitorInterface d, uint32_t n)
+static void dmputl(eDebugMonitorInterface d, uint32_t n)
 {
-	dputw(d, n >> 16);
-	dputw(d, n & 65535);
+	dmputw(d, n >> 16);
+	dmputw(d, n & 65535);
 
 	return;
 }
 
-static void dputsp(eDebugMonitorInterface d, uint8_t n)
+static void dmputsp(eDebugMonitorInterface d, uint8_t n)
 {
-	while (n--) dputc(d, ' ');
+	while (n--) dmputc(d, ' ');
 
 	return;
 }
@@ -268,20 +268,20 @@ static void MemoryDumpSubL(eDebugMonitorInterface d, uint32_t start, uint32_t en
 {
 	uint32_t sta = start & ~15;
 	//          01234567  01234567 01234567  01234567 01234567
-	dputs(d, "\n address  +3+2+1+0 +7+6+5+4  +b+a+9+8 +f+e+d+c");
+	dmputs(d, "\n address  +3+2+1+0 +7+6+5+4  +b+a+9+8 +f+e+d+c");
 	while (sta <= end) {
 		uint32_t val = sta >= (start & ~3) ? *(uint32_t *)sta : 0;
 		uint8_t buf[8];
 
 		if ((sta & 15) == 0) {
-			dputc(d, '\n');
-			dputl(d, sta);
-			dputsp(d, 1);
+			dmputc(d, '\n');
+			dmputl(d, sta);
+			dmputsp(d, 1);
 		}
 		else if ((sta & 7) == 0) {
-			dputsp(d, 1);
+			dmputsp(d, 1);
 		}
-		dputsp(d, 1);
+		dmputsp(d, 1);
 		for (int i = 0; i < 8; ++i) {
 			buf[i] = (val & 15) < 10 ? (val & 15) + '0' : (val & 15) - 10 + 'a';
 			val >>= 4;
@@ -301,12 +301,12 @@ static void MemoryDumpSubL(eDebugMonitorInterface d, uint32_t start, uint32_t en
 			}
 		}
 		for (int i = 8-1; i >= 0; --i) {
-			dputc(d, buf[i]);
+			dmputc(d, buf[i]);
 		}
 
 		sta += 4;
 	}
-	dflush(d);
+	dmflush(d);
 
 	return;
 }
@@ -315,20 +315,20 @@ static void MemoryDumpSubW(eDebugMonitorInterface d, uint32_t start, uint32_t en
 {
 	uint32_t sta = start & ~15;
 	//          01234567  0123 0123 0123 0123  0123 0123 0123 0123
-	dputs(d, "\n address  +1+0 +3+2 +5+4 +7+6  +9+8 +b+a +d+c +f+e");
+	dmputs(d, "\n address  +1+0 +3+2 +5+4 +7+6  +9+8 +b+a +d+c +f+e");
 	while (sta <= end) {
 		uint16_t val = sta >= (start & ~1) ? *(uint16_t *)sta : 0;
 		uint8_t buf[4];
 
 		if ((sta & 15) == 0) {
-			dputc(d, '\n');
-			dputl(d, sta);
-			dputsp(d, 1);
+			dmputc(d, '\n');
+			dmputl(d, sta);
+			dmputsp(d, 1);
 		}
 		else if ((sta & 7) == 0) {
-			dputsp(d, 1);
+			dmputsp(d, 1);
 		}
-		dputsp(d, 1);
+		dmputsp(d, 1);
 		for (int i = 0; i < 4; ++i) {
 			buf[i] = (val & 15) < 10 ? (val & 15) + '0' : (val & 15) - 10 + 'a';
 			val >>= 4;
@@ -348,12 +348,12 @@ static void MemoryDumpSubW(eDebugMonitorInterface d, uint32_t start, uint32_t en
 			}
 		}
 		for (int i = 4-1; i >= 0; --i) {
-			dputc(d, buf[i]);
+			dmputc(d, buf[i]);
 		}
 
 		sta += 2;
 	}
-	dflush(d);
+	dmflush(d);
 
 	return;
 }
@@ -362,44 +362,44 @@ static void MemoryDumpSubB(eDebugMonitorInterface d, uint32_t start, uint32_t en
 {
 	uint32_t sta = start & ~15;
 	//          01234567  01 01 01 01 01 01 01 01  01 01 01 01 01 01 01 01
-	dputs(d, "\n address  +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +a +b +c +d +e +f  0123456789abcdef");
+	dmputs(d, "\n address  +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +a +b +c +d +e +f  0123456789abcdef");
 	while (sta <= end) {
 		uint8_t val = sta >= start ? *(uint8_t *)sta : 0;
 
 		if ((sta & 15) == 0) {
-			dputc(d, '\n');
-			dputl(d, sta);
-			dputsp(d, 1);
+			dmputc(d, '\n');
+			dmputl(d, sta);
+			dmputsp(d, 1);
 		}
 		else if ((sta & 7) == 0) {
-			dputsp(d, 1);
+			dmputsp(d, 1);
 		}
-		dputsp(d, 1);
+		dmputsp(d, 1);
 		if (sta < start) {
-			dputsp(d, 2);
+			dmputsp(d, 2);
 		}
 		else {
-			dputb(d, val);
+			dmputb(d, val);
 		}
 
 		sta++;
 		if (((sta & 15) == 0) || (sta > end)) {
 			while (sta & 15) {
-				dputsp(d, (sta & 7) == 0 ? 4 : 3);
+				dmputsp(d, (sta & 7) == 0 ? 4 : 3);
 				sta++;
 			}
 
 			uint32_t a = sta-16;
 			uint8_t *p = (uint8_t *)a;
 
-			dputsp(d, 2);
+			dmputsp(d, 2);
 			for (int i = 0; i < 16; ++i) {
 				uint8_t c = *p++;
 				if ((a >= start) && (a <= end) && (c >= ' ') && (c < 0x7f)) {
-					dputc(d, c);
+					dmputc(d, c);
 				}
 				else {
-					dputsp(d, 1);
+					dmputsp(d, 1);
 				}
 				a++;
 			}
@@ -408,7 +408,7 @@ static void MemoryDumpSubB(eDebugMonitorInterface d, uint32_t start, uint32_t en
 			break;
 		}
 	}
-	dflush(d);
+	dmflush(d);
 
 	return;
 }
@@ -424,7 +424,7 @@ static eResult MemoryDump(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 		uint8_t len = 4;
 
 		start = strtoul(&cmd[ofs], &pw, 0);
-		dprintf(d, " start=%08x, end=", start);
+		dmprintf(d, " start=%08x, end=", start);
 		while ((*pw == ' ') || (*pw == ',')) pw++;
 		if ((*pw == 'S') || (*pw == 's')) {
 			pw++;
@@ -433,7 +433,7 @@ static eResult MemoryDump(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 				end = start + (size - 1);
 			}
 			else {
-				dputc(d, '?');
+				dmputc(d, '?');
 				result = eResult_NG;
 				help = 1;
 			}
@@ -442,12 +442,12 @@ static eResult MemoryDump(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 			end = strtoul(pw, &pw, 0);
 		}
 		else {
-			dputc(d, '?');
+			dmputc(d, '?');
 			result = eResult_NG;
 			help = 1;
 		}
 		if (result == eResult_OK) {
-			dprintf(d, "%08x, access=", end);
+			dmprintf(d, "%08x, access=", end);
 			while ((*pw == ' ') || (*pw == ',')) pw++;
 			if (*pw) {
 				if ((*pw == 'L') || (*pw == 'l')) {
@@ -460,7 +460,7 @@ static eResult MemoryDump(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 					len = 1;
 				}
 				else {
-					dputc(d, '?');
+					dmputc(d, '?');
 					result = eResult_NG;
 					help = 1;
 				}
@@ -468,13 +468,13 @@ static eResult MemoryDump(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 			if (result == eResult_OK) {
 				switch (len) {
 				case 4:
-					dputs(d, "Long");
+					dmputs(d, "Long");
 					break;
 				case 2:
-					dputs(d, "Word");
+					dmputs(d, "Word");
 					break;
 				case 1:
-					dputs(d, "Byte");
+					dmputs(d, "Byte");
 					break;
 				default:
 					break;
@@ -495,7 +495,7 @@ static eResult MemoryDump(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 					}
 				}
 				else {
-					dputs(d, " (start > end)");
+					dmputs(d, " (start > end)");
 					result = eResult_NG;
 				}
 			}
@@ -507,10 +507,10 @@ static eResult MemoryDump(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 	if (help) {
 		if (help == 1)
 		{
-			dputc(d, '\n');
+			dmputc(d, '\n');
 		}
-		dputs(d, " usage>MemoryDump start[nnnn], end[mmmm](, access[L:Long|W:Word|B:Byte])\n");
-		dputs(d, "                  start[nnnn], size[Smmmm](, access[L:Long|W:Word|B:Byte]))");
+		dmputs(d, " usage>MemoryDump start[nnnn], end[mmmm](, access[L:Long|W:Word|B:Byte])\n");
+		dmputs(d, "                  start[nnnn], size[Smmmm](, access[L:Long|W:Word|B:Byte]))");
 	}
 
 	return result;
@@ -552,18 +552,18 @@ static eResult SystemView(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 {
 	eResult result = eResult_OK;
 
-	dprintf(d, " SystemCoreClock = %d Hz", SystemCoreClock);
+	dmprintf(d, " SystemCoreClock = %d Hz", SystemCoreClock);
 #ifdef SDK_OS_FREE_RTOS
-	dprintf(d, "\n Kernel Tick = %d", xTaskGetTickCount());
-	dprintf(d, "\n core counter = %u", getCoreCounter());
+	dmprintf(d, "\n Kernel Tick = %d", xTaskGetTickCount());
+	dmprintf(d, "\n core counter = %u", getCoreCounter());
 #endif	//#ifdef SDK_OS_FREE_RTOS
 	float mulValue = 1.0f/0x80000000ul;
 	int32_t min = 0x80000000;
 	int32_t max = 0x7fffff00;
-	dprintf(d, "\n float ok ? %20.18f", (float)4.656612873e-10);
-	dprintf(d, "\n float ok ? %20.18g", mulValue);
-	dprintf(d, "\n float ok ? %20.18g", mulValue*max);
-	dprintf(d, "\n float ok ? %20.18g", mulValue*min);
+	dmprintf(d, "\n float ok ? %20.18f", (float)4.656612873e-10);
+	dmprintf(d, "\n float ok ? %20.18g", mulValue);
+	dmprintf(d, "\n float ok ? %20.18g", mulValue*max);
+	dmprintf(d, "\n float ok ? %20.18g", mulValue*min);
 
 	return result;
 }
@@ -675,7 +675,7 @@ static eResult TimingLog(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 			if (width > 32)
 			{
 				exec = 4;	// error
-				dprintf(d, " width %d error !", width);
+				dmprintf(d, " width %d error !", width);
 			}
 			break;
 		}
@@ -687,8 +687,8 @@ static eResult TimingLog(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 			uint32_t pre = timingLogBuffer[0];
 			uint32_t msk = (1 << width) - 1;
 
-			dprintf(d, " *** Timing Log (change:%d) ***", width);
-			dprintf(d, "\n0x%08x", pre);
+			dmprintf(d, " *** Timing Log (change:%d) ***", width);
+			dmprintf(d, "\n0x%08x", pre);
 			for (int i = 1; i < timingLogWrp; ++i)
 			{
 				uint32_t time = timingLogBuffer[i];
@@ -697,30 +697,30 @@ static eResult TimingLog(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 				if (pre != (time & ~msk))
 				{
 					pre |= (time - 1) & msk;
-					dprintf(d, "\n0x%08x", pre);
+					dmprintf(d, "\n0x%08x", pre);
 				}
-				dprintf(d, "\n0x%08x", time);
+				dmprintf(d, "\n0x%08x", time);
 				pre = time;
 			}
 		}
 		break;
 	case 3:
-		dprintf(d, " *** Timing Log (raw) ***");
+		dmprintf(d, " *** Timing Log (raw) ***");
 		for (int i = 0; i < timingLogWrp; ++i)
 		{
-			dprintf(d, "\n0x%08x", timingLogBuffer[i]);
+			dmprintf(d, "\n0x%08x", timingLogBuffer[i]);
 		}
 		break;
 	case 1:
-		dprintf(d, " reset !");
+		dmprintf(d, " reset !");
 		TimingLogClear();
 		break;
 	case 2:
-		dprintf(d,   " usage>TimingLog (cmd)");
-		dprintf(d, "\n   cmd:(w) change dump (w=width:28)");
-		dprintf(d, "\n      :'r' raw dump");
-		dprintf(d, "\n      :'c' clear");
-		dprintf(d, "\n      :'?' help");
+		dmprintf(d,   " usage>TimingLog (cmd)");
+		dmprintf(d, "\n   cmd:(w) change dump (w=width:28)");
+		dmprintf(d, "\n      :'r' raw dump");
+		dmprintf(d, "\n      :'c' clear");
+		dmprintf(d, "\n      :'?' help");
 		break;
 	default:
 		break;
@@ -754,9 +754,9 @@ static eResult Help(eDebugMonitorInterface d, uint8_t *cmd, uint8_t ofs)
 {
 	eResult result = eResult_OK;
 
-	dprintf(d, " --- Command List ---");
+	dmprintf(d, " --- Command List ---");
 	for (int i = 0; i < sizeof(commandList)/sizeof(commandList[0]); ++i) {
-		dprintf(d, "\n %s", commandList[i].pCmdStr);
+		dmprintf(d, "\n %s", commandList[i].pCmdStr);
 	}
 
 	return result;
@@ -777,7 +777,13 @@ static eResult commandExecute(eDebugMonitorInterface d, uint8_t *cmd)
 			ofs = strlen(commandList[i].pCmdStr);
 		}
 		if (strncmp(commandList[i].pCmdStr, cmd, ofs) == 0) {
-			return (commandList[i].pCmdFnc)(d, cmd, ofs);
+			if ((cmd[ofs] == '\0') || (cmd[ofs] == ' ')) {
+				eResult result = (commandList[i].pCmdFnc)(d, cmd, ofs);
+				if (result) {
+					dmputc(d, '\n');
+				}
+				return result;
+			}
 		}
 	}
 
@@ -811,9 +817,9 @@ void DebugMonitor_entry(eDebugMonitorInterface d, uint8_t c, uint8_t echo)
 		case ePhase_Wait2:
 			if (c == '@') {
 				pD->phase++;	// ePhase_Active
-				dprintf(d, "\n[[[ Debug Monitor (%s) ]]]\n", enterMsg[d]);
-				dputc(d, '*');
-				dflush(d);
+				dmprintf(d, "\n[[[ Debug Monitor (%s) ]]]\n", enterMsg[d]);
+				dmputc(d, '*');
+				dmflush(d);
 			}
 			else {
 				pD->phase = ePhase_Idle;
@@ -822,35 +828,32 @@ void DebugMonitor_entry(eDebugMonitorInterface d, uint8_t c, uint8_t echo)
 
 		case ePhase_Active:
 			if (c == '@') {
-				dputs(d, "\n[[[ Exit ]]]\n");
+				dmputs(d, "\n[[[ Exit ]]]\n");
 				pD->phase = ePhase_Idle;
 			}
 			else if ((c == '\r') || (c == '\n')) {
-				if (c == '\n')
-				{
-					c = '\r';
-				}
+				c = c == '\n' ? '\r' : '\n';
 				if (pD->ipos == 0) {
-					dputs(d, pD->iBuffer);
+					dmputs(d, pD->iBuffer);
 				}
 				else if (echo == 0) {
-					dflush(d);
+					dmflush(d);
 				}
-				dputc(d, c);
+				dmputc(d, c);
 				if (commandExecute(d, pD->iBuffer)) {
-					dputs(d, "\n Error Occurred !");
+					dmputs(d, " Error Occurred !");
 				}
-				dputs(d, "\n*");
+				dmputs(d, "\n*");
 				pD->ipos = 0;
 			}
 			else if (c == '\b') {
 				if (pD->ipos != 0) {
 					pD->iBuffer[--pD->ipos] = 0;
 					if (echo) {
-						dputc(d, c);
-						dputc(d, ' ');
-						dputc(d, c);
-						dflush(d);
+						dmputc(d, c);
+						dmputc(d, ' ');
+						dmputc(d, c);
+						dmflush(d);
 					}
 				}
 			}
@@ -858,9 +861,9 @@ void DebugMonitor_entry(eDebugMonitorInterface d, uint8_t c, uint8_t echo)
 				if (pD->ipos < (INPUTBUFSIZE-1)) {
 					pD->iBuffer[pD->ipos++] = c;
 					pD->iBuffer[pD->ipos] = 0;
-					dputc(d, c);
+					dmputc(d, c);
 					if (echo) {
-						dflush(d);
+						dmflush(d);
 					}
 				}
 			}
@@ -874,7 +877,7 @@ void DebugMonitor_entry(eDebugMonitorInterface d, uint8_t c, uint8_t echo)
 	return;
 }
 
-#undef dprintf
-#undef dputc
-#undef dputs
-#undef dflush
+#undef dmprintf
+#undef dmputc
+#undef dmputs
+#undef dmflush

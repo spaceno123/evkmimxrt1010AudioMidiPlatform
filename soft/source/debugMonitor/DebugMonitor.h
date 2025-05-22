@@ -17,10 +17,10 @@ typedef enum {
 	eDebugMonitorInterfaceNumOf,
 } eDebugMonitorInterface;
 
-void dprintf(eDebugMonitorInterface d, uint8_t *fmt, ...);	// with dflush()
-void dputc(eDebugMonitorInterface d, uint8_t c);			// without dflush()
-void dputs(eDebugMonitorInterface d, uint8_t *str);			// with dflush()
-void dflush(eDebugMonitorInterface d);
+void dmprintf(eDebugMonitorInterface d, uint8_t *fmt, ...);	// with dflush()
+void dmputc(eDebugMonitorInterface d, uint8_t c);			// without dflush()
+void dmputs(eDebugMonitorInterface d, uint8_t *str);			// with dflush()
+void dmflush(eDebugMonitorInterface d);
 
 void DebugMonitor_entry(eDebugMonitorInterface d, uint8_t c, uint8_t echo);
 
